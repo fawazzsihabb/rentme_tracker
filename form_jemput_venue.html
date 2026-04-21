@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0a0a">
+<title>3. Jemput Venue · RentMe</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --ink: #0a0a0a; --paper: #f4ede3; --paper-dark: #e8dfd1;
+    --accent: #c4341c; --green: #2d5f3f; --warn: #d4a017; --muted: #6b5d4a;
+    --step3-color: #d4a017;
+  }
+  html, body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--paper); color: var(--ink); line-height: 1.4;
+    min-height: 100vh; font-size: 16px; -webkit-font-smoothing: antialiased;
+  }
+  .app { max-width: 520px; margin: 0 auto; padding-bottom: 100px; }
+  .header {
+    background: var(--ink); color: var(--paper); padding: 20px;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .brand {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--step3-color); font-weight: 700; margin-bottom: 4px;
+  }
+  .step-indicator { display: flex; gap: 4px; margin-bottom: 8px; }
+  .step-dot { flex: 1; height: 3px; background: rgba(244,237,227,0.2); border-radius: 2px; }
+  .step-dot.done { background: var(--green); }
+  .step-dot.active { background: var(--step3-color); }
+  .title { font-size: 22px; font-weight: 900; letter-spacing: -0.02em; }
+  .subtitle { font-size: 12px; color: rgba(244,237,227,0.7); margin-top: 4px; }
+
+  .form-body { padding: 20px; }
+  .field { margin-bottom: 16px; }
+  .field-label {
+    display: block; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 6px;
+  }
+  .req { color: var(--accent); }
+  .hint { font-size: 11px; color: var(--muted); font-style: italic; margin-top: 4px; }
+  .input, .textarea {
+    width: 100%; padding: 14px; font-family: inherit; font-size: 16px;
+    color: var(--ink); background: #fff; border: 2px solid var(--ink);
+    border-radius: 0; outline: none; -webkit-appearance: none;
+  }
+  .input:focus, .textarea:focus { border-color: var(--step3-color); }
+  .input.prefilled { background: #f0f7ef; border-color: var(--green); }
+  .textarea { min-height: 60px; resize: vertical; font-family: inherit; }
+
+  .context-card {
+    background: var(--paper-dark); padding: 14px; margin-bottom: 16px;
+    border-left: 3px solid var(--green);
+  }
+  .context-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 8px;
+  }
+  .context-row {
+    display: flex; justify-content: space-between; padding: 3px 0;
+    font-size: 13px;
+  }
+  .context-row .lbl { color: var(--muted); }
+  .context-row .val { font-weight: 600; text-align: right; }
+
+  .cond-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .cond-btn {
+    padding: 16px 12px; background: #fff; border: 2px solid var(--ink);
+    cursor: pointer; text-align: left; position: relative;
+  }
+  .cond-btn input { position: absolute; opacity: 0; pointer-events: none; }
+  .cond-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+  .cond-label { font-weight: 700; font-size: 13px; }
+  .cond-desc { font-size: 10px; color: var(--muted); line-height: 1.3; margin-top: 2px; }
+  .cond-btn[data-severity="good"].selected { background: #f0f7ef; border-color: var(--green); border-width: 3px; }
+  .cond-btn[data-severity="minor"].selected { background: #fef9e7; border-color: var(--warn); border-width: 3px; }
+  .cond-btn[data-severity="major"].selected { background: #fdecec; border-color: var(--accent); border-width: 3px; }
+  .cond-btn[data-severity="lost"].selected {
+    background: var(--ink); color: var(--paper); border-color: var(--ink); border-width: 3px;
+  }
+  .cond-btn[data-severity="lost"].selected .cond-desc { color: rgba(244,237,227,0.7); }
+
+  .damage-section { display: none; padding: 14px; background: #fdecec; border: 2px solid var(--accent); margin-bottom: 16px; }
+  .damage-section.active { display: block; }
+
+  .photo-slot {
+    position: relative; width: 100%; aspect-ratio: 4/3;
+    background: var(--paper-dark); border: 2px dashed var(--ink);
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; cursor: pointer; overflow: hidden;
+  }
+  .photo-slot.filled { border-style: solid; border-color: var(--step3-color); }
+  .photo-slot input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .photo-slot-icon { font-size: 32px; margin-bottom: 6px; }
+  .photo-slot-label {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.05em; text-align: center; padding: 0 16px; color: var(--muted);
+  }
+  .photo-slot.filled .photo-slot-icon, .photo-slot.filled .photo-slot-label { display: none; }
+  .photo-preview { position: absolute; inset: 0; background-size: cover; background-position: center; display: none; }
+  .photo-slot.filled .photo-preview { display: block; }
+  .photo-remove {
+    position: absolute; top: 8px; right: 8px; width: 32px; height: 32px;
+    background: var(--ink); color: var(--paper); display: none;
+    align-items: center; justify-content: center; border: none;
+    cursor: pointer; font-size: 18px; font-weight: 700; z-index: 2;
+  }
+  .photo-slot.filled .photo-remove { display: flex; }
+
+  .info {
+    background: var(--paper-dark); border-left: 3px solid var(--step3-color);
+    padding: 10px 14px; margin-bottom: 16px; font-size: 12px; line-height: 1.5;
+  }
+  .info strong {
+    display: block; font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--step3-color); margin-bottom: 2px;
+  }
+
+  .nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 520px; background: var(--paper);
+    border-top: 2px solid var(--ink); padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+    z-index: 100;
+  }
+  .btn {
+    width: 100%; padding: 16px; font-family: inherit; font-size: 13px;
+    font-weight: 700; letter-spacing: 0.1em; border: 2px solid var(--ink);
+    cursor: pointer; text-transform: uppercase; background: var(--ink);
+    color: var(--paper);
+  }
+  .btn.loading { background: var(--muted); border-color: var(--muted); }
+  .btn.flag { background: var(--accent); border-color: var(--accent); }
+
+  .success { display: none; padding: 40px 20px; text-align: center; }
+  .success.active { display: block; }
+  .success-icon {
+    width: 70px; height: 70px; background: var(--step3-color); color: var(--paper);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 36px; font-weight: 900; margin: 0 auto 16px;
+  }
+  .success-icon.damage { background: var(--accent); }
+  .success-title { font-size: 22px; font-weight: 900; margin-bottom: 6px; }
+  .success-desc { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .success-id {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+    background: var(--paper-dark); padding: 8px 14px; display: inline-block;
+    margin-bottom: 20px;
+  }
+  .next-step-card {
+    background: var(--ink); color: var(--paper); padding: 20px; margin: 20px 0;
+    text-align: left;
+  }
+  .next-step-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(244,237,227,0.6); margin-bottom: 4px;
+  }
+  .next-step-title { font-size: 18px; font-weight: 900; margin-bottom: 4px; }
+  .next-step-desc { font-size: 12px; color: rgba(244,237,227,0.7); margin-bottom: 14px; }
+  .next-step-btn {
+    display: block; width: 100%; padding: 14px; background: var(--accent);
+    color: var(--paper); text-decoration: none; text-align: center;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+    font-size: 12px; border: none; font-family: inherit;
+  }
+  .wa-button {
+    display: inline-block; margin-top: 12px; padding: 10px 18px; background: #25D366;
+    color: white; text-decoration: none; font-weight: 700;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+  }
+
+  .error {
+    background: #fdecec; border-left: 3px solid var(--accent);
+    padding: 10px 14px; font-size: 13px; color: var(--accent);
+    margin-bottom: 12px; display: none;
+  }
+  .error.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <div class="brand">RentMe · Step 3 dari 4</div>
+    <div class="step-indicator">
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+    </div>
+    <h1 class="title">3. Jemput di Venue</h1>
+    <div class="subtitle">Isi saat sesi selesai & ambil raket</div>
+  </div>
+
+  <div class="form-body" id="form_body">
+    <div class="error" id="error_msg"></div>
+
+    <div class="context-card" id="context_card" style="display:none">
+      <div class="context-label">Order Aktif</div>
+      <div class="context-row"><span class="lbl">Order</span><span class="val" id="ctx_order">—</span></div>
+      <div class="context-row"><span class="lbl">Customer</span><span class="val" id="ctx_customer">—</span></div>
+      <div class="context-row"><span class="lbl">Venue</span><span class="val" id="ctx_venue">—</span></div>
+      <div class="context-row"><span class="lbl">Raket</span><span class="val" id="ctx_rackets">—</span></div>
+    </div>
+
+    <div class="info">
+      <strong>Sekarang di Venue</strong>
+      Cek kondisi raket dulu sebelum foto. Kalau rusak baru, catat jujur.
+    </div>
+
+    <div class="field">
+      <label class="field-label">Order ID <span class="req">*</span></label>
+      <input type="text" class="input" id="order_id" placeholder="RM-260421-XXXX" autocapitalize="characters">
+    </div>
+
+    <div class="field">
+      <label class="field-label">Kondisi Raket <span class="req">*</span></label>
+      <div class="cond-grid">
+        <div class="cond-btn" data-severity="good" onclick="selectCondition(this)">
+          <input type="radio" name="cond" value="good">
+          <span class="cond-icon">✓</span>
+          <span class="cond-label">Utuh</span>
+          <span class="cond-desc">Sama kayak waktu diambil</span>
+        </div>
+        <div class="cond-btn" data-severity="minor" onclick="selectCondition(this)">
+          <input type="radio" name="cond" value="minor">
+          <span class="cond-icon">!</span>
+          <span class="cond-label">Baret</span>
+          <span class="cond-desc">Gesekan wajar</span>
+        </div>
+        <div class="cond-btn" data-severity="major" onclick="selectCondition(this)">
+          <input type="radio" name="cond" value="major">
+          <span class="cond-icon">⚠</span>
+          <span class="cond-label">Rusak</span>
+          <span class="cond-desc">Patah, pecah</span>
+        </div>
+        <div class="cond-btn" data-severity="lost" onclick="selectCondition(this)">
+          <input type="radio" name="cond" value="lost">
+          <span class="cond-icon">✗</span>
+          <span class="cond-label">Hilang</span>
+          <span class="cond-desc">Tidak ditemukan</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="damage-section" id="damage_section">
+      <div class="field">
+        <label class="field-label">Detail Kerusakan <span class="req">*</span></label>
+        <textarea class="textarea" id="damage_description" placeholder="Raket mana, rusak di mana, siapa yang nyebabin"></textarea>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Foto Raket Saat Jemput <span class="req">*</span></label>
+      <div class="photo-slot" onclick="this.querySelector('input').click()">
+        <input type="file" accept="image/*" capture="environment" onchange="handlePhoto(this)">
+        <div class="photo-preview"></div>
+        <button type="button" class="photo-remove" onclick="event.stopPropagation(); removePhoto()">×</button>
+        <div class="photo-slot-icon">📷</div>
+        <div class="photo-slot-label">Tap untuk foto kondisi raket</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Jam Jemput</label>
+      <input type="time" class="input" id="pickup_time">
+    </div>
+  </div>
+
+  <div class="success" id="success">
+    <div class="success-icon" id="success_icon">✓</div>
+    <h2 class="success-title" id="success_title">Jemput Selesai ✓</h2>
+    <p class="success-desc" id="success_desc">Raket udah di tangan lo. Balik ke gudang.</p>
+    <div class="success-id" id="success_id">—</div>
+
+    <div class="next-step-card">
+      <div class="next-step-label">Step Berikutnya</div>
+      <div class="next-step-title">4. Balik ke Gudang →</div>
+      <div class="next-step-desc">Buka form ini saat sampai gudang & serah raket ke CS.</div>
+      <a href="#" class="next-step-btn" id="next_step_btn">Buka Form Step 4 →</a>
+    </div>
+
+    <a href="#" class="wa-button" id="wa_link">Kirim ke WhatsApp</a>
+  </div>
+
+  <div class="nav" id="nav">
+    <button class="btn" id="submit_btn" onclick="submitForm()">Submit Step 3 ✓</button>
+  </div>
+</div>
+
+<script>
+  const WEBHOOK_URL = 'REPLACE_WITH_YOUR_APPS_SCRIPT_URL';
+  const NEXT_FORM_URL = 'form_balik_gudang.html';
+
+  let photo = null;
+  let activeOrder = null;
+  let conditionSeverity = '';
+
+  function loadActiveOrder() {
+    try {
+      const raw = localStorage.getItem('rentme_active_order');
+      if (!raw) return;
+      const order = JSON.parse(raw);
+      const age = Date.now() - (order.updated_at || 0);
+      if (age > 24 * 3600 * 1000) return;  // 24 hr window for this step
+      activeOrder = order;
+
+      document.getElementById('order_id').value = order.order_id;
+      document.getElementById('order_id').classList.add('prefilled');
+
+      document.getElementById('context_card').style.display = 'block';
+      document.getElementById('ctx_order').textContent = order.order_id;
+      document.getElementById('ctx_customer').textContent = order.customer;
+      document.getElementById('ctx_venue').textContent = order.venue;
+      document.getElementById('ctx_rackets').textContent = order.racket_models.split('\n').join(', ');
+    } catch (err) { console.error(err); }
+  }
+
+  function selectCondition(el) {
+    document.querySelectorAll('.cond-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    el.querySelector('input').checked = true;
+    conditionSeverity = el.dataset.severity;
+    const dmg = document.getElementById('damage_section');
+    if (conditionSeverity !== 'good' && conditionSeverity !== '') dmg.classList.add('active');
+    else dmg.classList.remove('active');
+    const btn = document.getElementById('submit_btn');
+    if (conditionSeverity === 'major' || conditionSeverity === 'lost') {
+      btn.classList.add('flag');
+      btn.textContent = 'Submit & Flag ⚠';
+    } else {
+      btn.classList.remove('flag');
+      btn.textContent = 'Submit Step 3 ✓';
+    }
+  }
+
+  function handlePhoto(input) {
+    if (input.files && input.files[0]) {
+      const img = new Image();
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX = 1024;
+          const scale = Math.min(1, MAX / img.width);
+          canvas.width = img.width * scale;
+          canvas.height = img.height * scale;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          photo = canvas.toDataURL('image/jpeg', 0.7);
+          const slot = input.closest('.photo-slot');
+          slot.querySelector('.photo-preview').style.backgroundImage = `url(${photo})`;
+          slot.classList.add('filled');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function removePhoto() {
+    photo = null;
+    const slot = document.querySelector('.photo-slot');
+    slot.querySelector('input').value = '';
+    slot.querySelector('.photo-preview').style.backgroundImage = '';
+    slot.classList.remove('filled');
+  }
+
+  function showError(msg) {
+    const err = document.getElementById('error_msg');
+    err.textContent = msg;
+    err.classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  async function submitForm() {
+    document.getElementById('error_msg').classList.remove('active');
+    const btn = document.getElementById('submit_btn');
+
+    const orderId = document.getElementById('order_id').value.trim();
+    if (!orderId) { showError('Harap isi Order ID.'); return; }
+    if (!conditionSeverity) { showError('Harap pilih Kondisi.'); return; }
+    if (!photo) { showError('Harap foto raket.'); return; }
+    if (conditionSeverity !== 'good' && !document.getElementById('damage_description').value.trim()) {
+      showError('Harap isi Detail Kerusakan.'); return;
+    }
+
+    btn.disabled = true;
+    btn.classList.add('loading');
+    btn.textContent = 'Mengirim...';
+
+    const payload = {
+      form_type: 'jemput_venue',
+      timestamp: new Date().toISOString(),
+      order_id: orderId,
+      customer: activeOrder ? activeOrder.customer : '',
+      venue: activeOrder ? activeOrder.venue : '',
+      racket_models: activeOrder ? activeOrder.racket_models : '',
+      rackets_detail: activeOrder ? activeOrder.rackets_detail : [],
+      condition: conditionSeverity,
+      damage_description: document.getElementById('damage_description').value.trim(),
+      pickup_time: document.getElementById('pickup_time').value,
+      photo: photo,
+      flagged: (conditionSeverity === 'major' || conditionSeverity === 'lost'),
+    };
+
+    try {
+      await fetch(WEBHOOK_URL, {
+        method: 'POST', mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+      });
+
+      // Save condition for Form 4 pre-fill
+      if (activeOrder) {
+        activeOrder.updated_at = Date.now();
+        activeOrder.pickup_condition = conditionSeverity;
+        activeOrder.damage_description = document.getElementById('damage_description').value.trim();
+        localStorage.setItem('rentme_active_order', JSON.stringify(activeOrder));
+      }
+
+      showSuccess(orderId);
+    } catch (err) {
+      showError('Gagal kirim. ' + err.message);
+      btn.disabled = false;
+      btn.classList.remove('loading');
+      btn.textContent = conditionSeverity === 'major' || conditionSeverity === 'lost' ? 'Submit & Flag ⚠' : 'Submit Step 3 ✓';
+    }
+  }
+
+  function showSuccess(orderId) {
+    document.getElementById('form_body').style.display = 'none';
+    document.getElementById('nav').style.display = 'none';
+    document.getElementById('success').classList.add('active');
+    document.getElementById('success_id').textContent = orderId;
+
+    if (conditionSeverity === 'major' || conditionSeverity === 'lost') {
+      document.getElementById('success_icon').classList.add('damage');
+      document.getElementById('success_icon').textContent = '⚠';
+      document.getElementById('success_title').textContent = 'Tercatat & Di-Flag';
+      document.getElementById('success_desc').innerHTML = 'Kerusakan dicatat. Dispatcher akan follow-up.';
+    }
+
+    document.getElementById('next_step_btn').href = NEXT_FORM_URL;
+
+    const condMap = {good: 'UTUH ✓', minor: 'BARET', major: 'RUSAK ⚠', lost: 'HILANG ✗'};
+    const customer = activeOrder ? activeOrder.customer : '';
+    const venue = activeOrder ? activeOrder.venue : '';
+    let msg = `*3. JEMPUT VENUE*\nOrder: ${orderId}\nCustomer: ${customer}\nVenue: ${venue}\nKondisi: ${condMap[conditionSeverity]}`;
+    if (conditionSeverity !== 'good') {
+      msg += `\nCatatan: ${document.getElementById('damage_description').value.trim()}`;
+    }
+    if (conditionSeverity === 'major' || conditionSeverity === 'lost') {
+      msg = `⚠ *PERLU REVIEW* ⚠\n\n` + msg;
+    }
+    msg += `\n\n✓ Raket di tangan courier`;
+    document.getElementById('wa_link').href = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  }
+
+  document.addEventListener('DOMContentLoaded', loadActiveOrder);
+</script>
+</body>
+</html>

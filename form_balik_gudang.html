@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0a0a">
+<title>4. Balik Gudang · RentMe</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --ink: #0a0a0a; --paper: #f4ede3; --paper-dark: #e8dfd1;
+    --accent: #c4341c; --green: #2d5f3f; --muted: #6b5d4a;
+    --step4-color: #2d5f3f;
+  }
+  html, body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--paper); color: var(--ink); line-height: 1.4;
+    min-height: 100vh; font-size: 16px; -webkit-font-smoothing: antialiased;
+  }
+  .app { max-width: 520px; margin: 0 auto; padding-bottom: 100px; }
+  .header {
+    background: var(--ink); color: var(--paper); padding: 20px;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .brand {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--step4-color); font-weight: 700; margin-bottom: 4px;
+  }
+  .step-indicator { display: flex; gap: 4px; margin-bottom: 8px; }
+  .step-dot { flex: 1; height: 3px; background: rgba(244,237,227,0.2); border-radius: 2px; }
+  .step-dot.done { background: var(--green); }
+  .step-dot.active { background: var(--step4-color); }
+  .title { font-size: 22px; font-weight: 900; letter-spacing: -0.02em; }
+  .subtitle { font-size: 12px; color: rgba(244,237,227,0.7); margin-top: 4px; }
+
+  .form-body { padding: 20px; }
+  .field { margin-bottom: 16px; }
+  .field-label {
+    display: block; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 6px;
+  }
+  .req { color: var(--accent); }
+  .hint { font-size: 11px; color: var(--muted); font-style: italic; margin-top: 4px; }
+  .input, .textarea, .select {
+    width: 100%; padding: 14px; font-family: inherit; font-size: 16px;
+    color: var(--ink); background: #fff; border: 2px solid var(--ink);
+    border-radius: 0; outline: none; -webkit-appearance: none;
+  }
+  .input:focus, .textarea:focus, .select:focus { border-color: var(--step4-color); }
+  .input.prefilled { background: #f0f7ef; border-color: var(--green); }
+  .select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%230a0a0a' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px;
+  }
+
+  .context-card {
+    background: var(--paper-dark); padding: 14px; margin-bottom: 16px;
+    border-left: 3px solid var(--green);
+  }
+  .context-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 8px;
+  }
+  .context-row {
+    display: flex; justify-content: space-between; padding: 3px 0;
+    font-size: 13px;
+  }
+  .context-row .lbl { color: var(--muted); }
+  .context-row .val { font-weight: 600; text-align: right; }
+  .context-row .val.damage-flag { color: var(--accent); font-weight: 700; }
+
+  .photo-slot {
+    position: relative; width: 100%; aspect-ratio: 4/3;
+    background: var(--paper-dark); border: 2px dashed var(--ink);
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; cursor: pointer; overflow: hidden;
+  }
+  .photo-slot.filled { border-style: solid; border-color: var(--step4-color); }
+  .photo-slot input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .photo-slot-icon { font-size: 32px; margin-bottom: 6px; }
+  .photo-slot-label {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.05em; text-align: center; padding: 0 16px; color: var(--muted);
+  }
+  .photo-slot.filled .photo-slot-icon, .photo-slot.filled .photo-slot-label { display: none; }
+  .photo-preview { position: absolute; inset: 0; background-size: cover; background-position: center; display: none; }
+  .photo-slot.filled .photo-preview { display: block; }
+  .photo-remove {
+    position: absolute; top: 8px; right: 8px; width: 32px; height: 32px;
+    background: var(--ink); color: var(--paper); display: none;
+    align-items: center; justify-content: center; border: none;
+    cursor: pointer; font-size: 18px; font-weight: 700; z-index: 2;
+  }
+  .photo-slot.filled .photo-remove { display: flex; }
+
+  .info {
+    background: var(--paper-dark); border-left: 3px solid var(--step4-color);
+    padding: 10px 14px; margin-bottom: 16px; font-size: 12px; line-height: 1.5;
+  }
+  .info strong {
+    display: block; font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--step4-color); margin-bottom: 2px;
+  }
+
+  .nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 520px; background: var(--paper);
+    border-top: 2px solid var(--ink); padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+    z-index: 100;
+  }
+  .btn {
+    width: 100%; padding: 16px; font-family: inherit; font-size: 13px;
+    font-weight: 700; letter-spacing: 0.1em; border: 2px solid var(--ink);
+    cursor: pointer; text-transform: uppercase; background: var(--step4-color);
+    color: var(--paper); border-color: var(--step4-color);
+  }
+  .btn.loading { background: var(--muted); border-color: var(--muted); }
+
+  .success { display: none; padding: 40px 20px; text-align: center; }
+  .success.active { display: block; }
+  .success-icon {
+    width: 90px; height: 90px; background: var(--step4-color); color: var(--paper);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 44px; font-weight: 900; margin: 0 auto 16px;
+  }
+  .success-title { font-size: 26px; font-weight: 900; margin-bottom: 8px; }
+  .success-desc { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
+  .success-id {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+    background: var(--paper-dark); padding: 8px 14px; display: inline-block;
+    margin-bottom: 20px;
+  }
+  .cycle-complete {
+    background: var(--green); color: var(--paper); padding: 16px; margin: 20px 0;
+    font-weight: 700; letter-spacing: 0.05em;
+  }
+  .next-order-btn {
+    display: block; width: 100%; padding: 14px; background: var(--ink);
+    color: var(--paper); text-decoration: none; text-align: center;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+    font-size: 12px; border: none; font-family: inherit; margin-top: 12px;
+  }
+  .wa-button {
+    display: inline-block; margin-top: 12px; padding: 10px 18px; background: #25D366;
+    color: white; text-decoration: none; font-weight: 700;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+  }
+
+  .error {
+    background: #fdecec; border-left: 3px solid var(--accent);
+    padding: 10px 14px; font-size: 13px; color: var(--accent);
+    margin-bottom: 12px; display: none;
+  }
+  .error.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <div class="brand">RentMe · Step 4 dari 4 (Terakhir)</div>
+    <div class="step-indicator">
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+    </div>
+    <h1 class="title">4. Balik ke Gudang</h1>
+    <div class="subtitle">Isi saat serah raket ke CS gudang</div>
+  </div>
+
+  <div class="form-body" id="form_body">
+    <div class="error" id="error_msg"></div>
+
+    <div class="context-card" id="context_card" style="display:none">
+      <div class="context-label">Order Aktif</div>
+      <div class="context-row"><span class="lbl">Order</span><span class="val" id="ctx_order">—</span></div>
+      <div class="context-row"><span class="lbl">Customer</span><span class="val" id="ctx_customer">—</span></div>
+      <div class="context-row"><span class="lbl">Venue</span><span class="val" id="ctx_venue">—</span></div>
+      <div class="context-row"><span class="lbl">Raket</span><span class="val" id="ctx_rackets">—</span></div>
+      <div class="context-row" id="ctx_condition_row" style="display:none">
+        <span class="lbl">Kondisi Saat Jemput</span><span class="val" id="ctx_condition">—</span>
+      </div>
+    </div>
+
+    <div class="info">
+      <strong>Sekarang di Gudang</strong>
+      Last step. Serah raket ke CS, foto bukti, selesai.
+    </div>
+
+    <div class="field">
+      <label class="field-label">Order ID <span class="req">*</span></label>
+      <input type="text" class="input" id="order_id" placeholder="RM-260421-XXXX" autocapitalize="characters">
+    </div>
+
+    <div class="field">
+      <label class="field-label">Foto Raket di Gudang <span class="req">*</span></label>
+      <div class="photo-slot" onclick="this.querySelector('input').click()">
+        <input type="file" accept="image/*" capture="environment" onchange="handlePhoto(this)">
+        <div class="photo-preview"></div>
+        <button type="button" class="photo-remove" onclick="event.stopPropagation(); removePhoto()">×</button>
+        <div class="photo-slot-icon">📷</div>
+        <div class="photo-slot-label">Tap untuk foto serah ke CS</div>
+      </div>
+      <div class="hint">Foto raket + CS gudang yang nerima.</div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Diterima Oleh (CS Gudang) <span class="req">*</span></label>
+      <input type="text" class="input" id="received_by_warehouse" placeholder="Nama CS gudang">
+    </div>
+
+    <div class="field">
+      <label class="field-label">Jam Sampai Gudang</label>
+      <input type="time" class="input" id="return_time">
+    </div>
+  </div>
+
+  <div class="success" id="success">
+    <div class="success-icon">✓</div>
+    <h2 class="success-title">Order Selesai ✓</h2>
+    <p class="success-desc">Cycle lengkap. Raket balik, lo selesai.</p>
+    <div class="success-id" id="success_id">—</div>
+
+    <div class="cycle-complete">
+      ✓ AMBIL · ✓ SERAH · ✓ JEMPUT · ✓ BALIK
+    </div>
+
+    <a href="#" class="wa-button" id="wa_link">Kirim Ringkasan ke WA</a>
+    <a href="form_ambil_gudang.html" class="next-order-btn">Mulai Order Baru →</a>
+  </div>
+
+  <div class="nav" id="nav">
+    <button class="btn" id="submit_btn" onclick="submitForm()">Submit Step 4 ✓ (Final)</button>
+  </div>
+</div>
+
+<script>
+  const WEBHOOK_URL = 'REPLACE_WITH_YOUR_APPS_SCRIPT_URL';
+
+  let photo = null;
+  let activeOrder = null;
+
+  function loadActiveOrder() {
+    try {
+      const raw = localStorage.getItem('rentme_active_order');
+      if (!raw) return;
+      const order = JSON.parse(raw);
+      const age = Date.now() - (order.updated_at || 0);
+      if (age > 24 * 3600 * 1000) return;
+      activeOrder = order;
+
+      document.getElementById('order_id').value = order.order_id;
+      document.getElementById('order_id').classList.add('prefilled');
+
+      document.getElementById('context_card').style.display = 'block';
+      document.getElementById('ctx_order').textContent = order.order_id;
+      document.getElementById('ctx_customer').textContent = order.customer;
+      document.getElementById('ctx_venue').textContent = order.venue;
+      document.getElementById('ctx_rackets').textContent = order.racket_models.split('\n').join(', ');
+
+      if (order.pickup_condition) {
+        const condMap = {good: 'Utuh ✓', minor: 'Baret Ringan', major: 'Rusak Berat ⚠', lost: 'Hilang ✗'};
+        document.getElementById('ctx_condition_row').style.display = 'flex';
+        const condEl = document.getElementById('ctx_condition');
+        condEl.textContent = condMap[order.pickup_condition] || order.pickup_condition;
+        if (order.pickup_condition === 'major' || order.pickup_condition === 'lost') {
+          condEl.classList.add('damage-flag');
+        }
+      }
+    } catch (err) { console.error(err); }
+  }
+
+  function handlePhoto(input) {
+    if (input.files && input.files[0]) {
+      const img = new Image();
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX = 1024;
+          const scale = Math.min(1, MAX / img.width);
+          canvas.width = img.width * scale;
+          canvas.height = img.height * scale;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          photo = canvas.toDataURL('image/jpeg', 0.7);
+          const slot = input.closest('.photo-slot');
+          slot.querySelector('.photo-preview').style.backgroundImage = `url(${photo})`;
+          slot.classList.add('filled');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function removePhoto() {
+    photo = null;
+    const slot = document.querySelector('.photo-slot');
+    slot.querySelector('input').value = '';
+    slot.querySelector('.photo-preview').style.backgroundImage = '';
+    slot.classList.remove('filled');
+  }
+
+  function showError(msg) {
+    const err = document.getElementById('error_msg');
+    err.textContent = msg;
+    err.classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  async function submitForm() {
+    document.getElementById('error_msg').classList.remove('active');
+    const btn = document.getElementById('submit_btn');
+
+    const orderId = document.getElementById('order_id').value.trim();
+    const receivedBy = document.getElementById('received_by_warehouse').value.trim();
+
+    if (!orderId) { showError('Harap isi Order ID.'); return; }
+    if (!photo) { showError('Harap foto raket di gudang.'); return; }
+    if (!receivedBy) { showError('Harap isi nama CS gudang.'); return; }
+
+    btn.disabled = true;
+    btn.classList.add('loading');
+    btn.textContent = 'Mengirim...';
+
+    const payload = {
+      form_type: 'balik_gudang',
+      timestamp: new Date().toISOString(),
+      order_id: orderId,
+      customer: activeOrder ? activeOrder.customer : '',
+      venue: activeOrder ? activeOrder.venue : '',
+      racket_models: activeOrder ? activeOrder.racket_models : '',
+      rackets_detail: activeOrder ? activeOrder.rackets_detail : [],
+      condition_final: activeOrder ? activeOrder.pickup_condition : 'good',
+      received_by_warehouse: receivedBy,
+      return_time: document.getElementById('return_time').value,
+      photo: photo,
+    };
+
+    try {
+      await fetch(WEBHOOK_URL, {
+        method: 'POST', mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+      });
+
+      // Clear active order — cycle complete
+      localStorage.removeItem('rentme_active_order');
+
+      showSuccess(orderId);
+    } catch (err) {
+      showError('Gagal kirim. ' + err.message);
+      btn.disabled = false;
+      btn.classList.remove('loading');
+      btn.textContent = 'Submit Step 4 ✓ (Final)';
+    }
+  }
+
+  function showSuccess(orderId) {
+    document.getElementById('form_body').style.display = 'none';
+    document.getElementById('nav').style.display = 'none';
+    document.getElementById('success').classList.add('active');
+    document.getElementById('success_id').textContent = orderId;
+
+    const customer = activeOrder ? activeOrder.customer : '';
+    const venue = activeOrder ? activeOrder.venue : '';
+    const msg = `*4. BALIK GUDANG*\nOrder: ${orderId}\nCustomer: ${customer}\nVenue: ${venue}\n\n✓ ORDER COMPLETE ✓\nRaket balik utuh ke gudang.`;
+    document.getElementById('wa_link').href = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  }
+
+  document.addEventListener('DOMContentLoaded', loadActiveOrder);
+</script>
+</body>
+</html>
