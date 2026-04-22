@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0a0a">
+<title>1. Ambil Gudang · RentMe</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --ink: #0a0a0a; --paper: #f4ede3; --paper-dark: #e8dfd1;
+    --accent: #c4341c; --green: #2d5f3f; --muted: #6b5d4a;
+    --step-color: #2d5f3f;
+  }
+  html, body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--paper); color: var(--ink); line-height: 1.4;
+    min-height: 100vh; font-size: 16px; -webkit-font-smoothing: antialiased;
+  }
+  .app { max-width: 520px; margin: 0 auto; padding-bottom: 100px; }
+  .header {
+    background: var(--ink); color: var(--paper); padding: 20px;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .brand {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--step-color); font-weight: 700; margin-bottom: 4px;
+  }
+  .step-indicator { display: flex; gap: 4px; margin-bottom: 8px; }
+  .step-dot { flex: 1; height: 3px; background: rgba(244,237,227,0.2); border-radius: 2px; }
+  .step-dot.active { background: var(--step-color); }
+  .title { font-size: 22px; font-weight: 900; letter-spacing: -0.02em; }
+  .subtitle { font-size: 12px; color: rgba(244,237,227,0.7); margin-top: 4px; }
+
+  .form-body { padding: 20px; }
+  .field { margin-bottom: 16px; }
+  .field-label {
+    display: block; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 6px;
+  }
+  .req { color: var(--accent); }
+  .hint { font-size: 11px; color: var(--muted); font-style: italic; margin-top: 4px; }
+  .input, .textarea, .select {
+    width: 100%; padding: 14px; font-family: inherit; font-size: 16px;
+    color: var(--ink); background: #fff; border: 2px solid var(--ink);
+    border-radius: 0; outline: none; -webkit-appearance: none;
+  }
+  .input:focus, .textarea:focus, .select:focus { border-color: var(--step-color); }
+  .textarea { min-height: 60px; resize: vertical; font-family: inherit; }
+  .select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%230a0a0a' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px;
+  }
+
+  .racket-selector { background: #fff; border: 2px solid var(--ink); padding: 10px; }
+  .racket-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+  .racket-row select {
+    flex: 1; padding: 12px; font-size: 15px; font-family: inherit;
+    border: 1.5px solid var(--ink); background: #fff; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%230a0a0a' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px;
+  }
+  .racket-row .remove-btn {
+    flex: 0 0 40px; height: 44px; background: var(--paper-dark);
+    border: 1.5px solid var(--ink); font-size: 18px; font-weight: 700;
+    cursor: pointer; color: var(--accent);
+  }
+  .add-racket-btn {
+    width: 100%; padding: 10px; background: var(--paper-dark);
+    border: 1.5px dashed var(--ink); font-family: inherit; font-size: 13px;
+    font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    cursor: pointer; color: var(--muted); margin-top: 4px;
+  }
+
+  .info {
+    background: var(--paper-dark); border-left: 3px solid var(--step-color);
+    padding: 10px 14px; margin-bottom: 16px; font-size: 12px; line-height: 1.5;
+  }
+  .info strong {
+    display: block; font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--step-color); margin-bottom: 2px;
+  }
+
+  .wa-instruction {
+    background: #25D366; color: white; padding: 14px; margin-bottom: 16px;
+    font-size: 12px; line-height: 1.5;
+  }
+  .wa-instruction strong {
+    display: block; font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.1em; margin-bottom: 4px;
+  }
+
+  .nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 520px; background: var(--paper);
+    border-top: 2px solid var(--ink); padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+    z-index: 100;
+  }
+  .btn {
+    width: 100%; padding: 16px; font-family: inherit; font-size: 13px;
+    font-weight: 700; letter-spacing: 0.1em; border: 2px solid var(--ink);
+    cursor: pointer; text-transform: uppercase; background: var(--ink);
+    color: var(--paper);
+  }
+  .btn.loading { background: var(--muted); border-color: var(--muted); }
+
+  .success { display: none; padding: 30px 20px; text-align: center; }
+  .success.active { display: block; }
+  .success-icon {
+    width: 64px; height: 64px; background: var(--step-color); color: var(--paper);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 32px; font-weight: 900; margin: 0 auto 14px;
+  }
+  .success-title { font-size: 22px; font-weight: 900; margin-bottom: 4px; }
+  .success-desc { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+
+  .wa-card {
+    background: #fff; border: 2px solid var(--ink); padding: 0;
+    margin: 0 0 20px; text-align: left; overflow: hidden;
+  }
+  .wa-card-header {
+    background: var(--ink); color: var(--paper); padding: 10px 14px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .wa-card-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .wa-card-body {
+    padding: 14px; font-size: 13px; line-height: 1.6; white-space: pre-wrap;
+    font-family: 'JetBrains Mono', monospace; background: var(--paper);
+  }
+  .copy-btn {
+    width: 100%; padding: 14px; background: #25D366; color: white;
+    border: none; font-family: inherit; font-weight: 700;
+    font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    gap: 8px;
+  }
+  .copy-btn.copied { background: var(--green); }
+  .copy-btn:active { transform: scale(0.98); }
+
+  .next-step-card {
+    background: var(--ink); color: var(--paper); padding: 18px; margin-top: 20px;
+    text-align: left;
+  }
+  .next-step-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(244,237,227,0.6); margin-bottom: 4px;
+  }
+  .next-step-title { font-size: 16px; font-weight: 900; margin-bottom: 4px; }
+  .next-step-desc { font-size: 12px; color: rgba(244,237,227,0.7); margin-bottom: 12px; }
+  .next-step-btn {
+    display: block; width: 100%; padding: 12px; background: var(--accent);
+    color: var(--paper); text-decoration: none; text-align: center;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+    font-size: 12px; border: none; font-family: inherit;
+  }
+
+  .error {
+    background: #fdecec; border-left: 3px solid var(--accent);
+    padding: 10px 14px; font-size: 13px; color: var(--accent);
+    margin-bottom: 12px; display: none;
+  }
+  .error.active { display: block; }
+
+  .loading-state {
+    padding: 14px; background: var(--paper-dark); border: 2px solid var(--muted);
+    font-size: 13px; color: var(--muted); text-align: center; font-style: italic;
+  }
+  .loading-spinner {
+    display: inline-block; width: 14px; height: 14px;
+    border: 2px solid var(--muted); border-top-color: transparent;
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+    margin-right: 8px; vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <div class="brand">RentMe · Step 1 dari 4</div>
+    <div class="step-indicator">
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+    </div>
+    <h1 class="title">1. Ambil di Gudang</h1>
+    <div class="subtitle">Isi saat ambil raket di gudang</div>
+  </div>
+
+  <div class="form-body" id="form_body">
+    <div class="error" id="error_msg"></div>
+
+    <div class="wa-instruction">
+      <strong>Foto via WhatsApp</strong>
+      Form ini cuma data. Foto raket pakai Timemark → kirim ke grup WA bareng pesan yang di-generate form ini.
+    </div>
+
+    <div class="field">
+      <label class="field-label">Nama Lo (Courier) <span class="req">*</span></label>
+      <input type="text" class="input" id="courier_name" placeholder="Nama lo">
+      <div class="hint">Disimpan otomatis. Nggak perlu isi ulang besok.</div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Order ID <span class="req">*</span></label>
+      <input type="text" class="input" id="order_id" placeholder="RM-260421-XXXX" autocapitalize="characters">
+    </div>
+
+    <div class="field">
+      <label class="field-label">Customer <span class="req">*</span></label>
+      <input type="text" class="input" id="customer_name" placeholder="Nama customer">
+    </div>
+
+    <div class="field">
+      <label class="field-label">Venue Tujuan <span class="req">*</span></label>
+      <div id="venue_container">
+        <div class="loading-state"><span class="loading-spinner"></span>Loading venues...</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Raket yang Diambil <span class="req">*</span></label>
+      <div id="racket_selector_container">
+        <div class="loading-state"><span class="loading-spinner"></span>Loading rackets...</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Kondisi Saat Ambil (opsional)</label>
+      <textarea class="textarea" id="condition_note" placeholder="Ada baret/cacat yang udah ada?"></textarea>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Jam Keluar Gudang</label>
+      <input type="time" class="input" id="pickup_time">
+    </div>
+  </div>
+
+  <div class="success" id="success">
+    <div class="success-icon">✓</div>
+    <h2 class="success-title">Data Tersimpan ✓</h2>
+    <p class="success-desc">Copy text di bawah → paste di grup WA bareng foto Timemark.</p>
+
+    <div class="wa-card">
+      <div class="wa-card-header">
+        <span class="wa-card-title">Template WhatsApp</span>
+      </div>
+      <div class="wa-card-body" id="wa_message"></div>
+      <button class="copy-btn" id="copy_btn" onclick="copyMessage()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+        </svg>
+        <span id="copy_btn_text">Copy Text</span>
+      </button>
+    </div>
+
+    <div class="next-step-card">
+      <div class="next-step-label">Setelah Kirim WA</div>
+      <div class="next-step-title">2. Serah di Venue →</div>
+      <div class="next-step-desc">Buka saat sampai venue & serah raket ke customer.</div>
+      <a href="#" class="next-step-btn" id="next_step_btn">Buka Form Step 2 →</a>
+    </div>
+  </div>
+
+  <div class="nav" id="nav">
+    <button class="btn" id="submit_btn" onclick="submitForm()">Submit Step 1 ✓</button>
+  </div>
+</div>
+
+<script>
+  const WEBHOOK_URL = 'REPLACE_WITH_YOUR_APPS_SCRIPT_URL';
+  const NEXT_FORM_URL = 'form_serah_venue.html';
+
+  let rackets = [];
+  let venues = [];
+
+  // Remember courier name on phone
+  document.addEventListener('DOMContentLoaded', () => {
+    const savedName = localStorage.getItem('rentme_courier_name');
+    if (savedName) document.getElementById('courier_name').value = savedName;
+    loadDropdownData();
+  });
+
+  async function loadDropdownData() {
+    try {
+      const cached = localStorage.getItem('rentme_dropdowns');
+      const cachedTime = localStorage.getItem('rentme_dropdowns_time');
+      if (cached && cachedTime) {
+        const age = Date.now() - parseInt(cachedTime);
+        if (age < 3600000) {
+          const data = JSON.parse(cached);
+          rackets = data.rackets; venues = data.venues;
+          renderDropdowns();
+          fetchFresh();
+          return;
+        }
+      }
+      await fetchFresh();
+    } catch (err) {
+      console.error('Load error:', err);
+      rackets = []; venues = [];
+      renderDropdowns();
+    }
+  }
+
+  async function fetchFresh() {
+    const res = await fetch(`${WEBHOOK_URL}?action=lists`, { method: 'GET', mode: 'cors' });
+    const data = await res.json();
+    rackets = data.rackets || []; venues = data.venues || [];
+    localStorage.setItem('rentme_dropdowns', JSON.stringify(data));
+    localStorage.setItem('rentme_dropdowns_time', Date.now().toString());
+    renderDropdowns();
+  }
+
+  function renderDropdowns() {
+    const venueContainer = document.getElementById('venue_container');
+    if (venues.length === 0) {
+      venueContainer.innerHTML = '<input type="text" class="input" id="venue_select" placeholder="Nama venue">';
+    } else {
+      let html = '<select class="select" id="venue_select"><option value="">-- Pilih venue --</option>';
+      venues.forEach(v => { html += `<option value="${esc(v.name)}">${esc(v.label)}</option>`; });
+      html += '</select>';
+      venueContainer.innerHTML = html;
+    }
+
+    const racketContainer = document.getElementById('racket_selector_container');
+    racketContainer.innerHTML = '<div class="racket-selector" id="racket_selector"></div><button type="button" class="add-racket-btn" onclick="addRacketRow()">+ Tambah Raket</button>';
+    addRacketRow();
+  }
+
+  function addRacketRow() {
+    const selector = document.getElementById('racket_selector');
+    const row = document.createElement('div');
+    row.className = 'racket-row';
+    let selectHtml = '<select class="racket-select"><option value="">-- Pilih raket --</option>';
+    rackets.forEach(r => {
+      selectHtml += `<option value="${esc(r.model)}" data-id="${esc(r.id)}" data-tier="${esc(r.tier)}">${esc(r.label)}</option>`;
+    });
+    selectHtml += '</select>';
+    row.innerHTML = selectHtml + '<button type="button" class="remove-btn" onclick="removeRacketRow(this)">×</button>';
+    selector.appendChild(row);
+  }
+
+  function removeRacketRow(btn) {
+    const row = btn.closest('.racket-row');
+    const selector = document.getElementById('racket_selector');
+    if (selector.children.length > 1) row.remove();
+    else row.querySelector('select').value = '';
+  }
+
+  function getSelectedRackets() {
+    const rows = document.querySelectorAll('.racket-select');
+    const selected = [];
+    rows.forEach(sel => {
+      if (sel.value) {
+        const opt = sel.selectedOptions[0];
+        selected.push({ model: sel.value, id: opt.getAttribute('data-id'), tier: opt.getAttribute('data-tier') });
+      }
+    });
+    return selected;
+  }
+
+  function esc(t) {
+    if (!t) return '';
+    return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function showError(msg) {
+    const err = document.getElementById('error_msg');
+    err.textContent = msg;
+    err.classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function getVenueValue() {
+    const el = document.getElementById('venue_select');
+    return el ? el.value.trim() : '';
+  }
+
+  async function submitForm() {
+    document.getElementById('error_msg').classList.remove('active');
+    const btn = document.getElementById('submit_btn');
+
+    const courierName = document.getElementById('courier_name').value.trim();
+    const orderId = document.getElementById('order_id').value.trim();
+    const customer = document.getElementById('customer_name').value.trim();
+    const venue = getVenueValue();
+    const selectedRackets = getSelectedRackets();
+    const pickupTime = document.getElementById('pickup_time').value;
+
+    if (!courierName || !orderId || !customer || !venue) {
+      showError('Harap isi Nama, Order ID, Customer, dan Venue.'); return;
+    }
+    if (selectedRackets.length === 0) {
+      showError('Harap pilih minimal 1 raket.'); return;
+    }
+
+    // Save courier name for next time
+    localStorage.setItem('rentme_courier_name', courierName);
+
+    btn.disabled = true;
+    btn.classList.add('loading');
+    btn.textContent = 'Mengirim...';
+
+    const racketModelsText = selectedRackets.map(r => r.model).join(' & ');
+
+    const payload = {
+      form_type: 'ambil_gudang',
+      timestamp: new Date().toISOString(),
+      courier_name: courierName,
+      order_id: orderId,
+      customer: customer,
+      venue: venue,
+      racket_models: racketModelsText,
+      rackets_detail: selectedRackets,
+      condition_note: document.getElementById('condition_note').value.trim(),
+      pickup_time: pickupTime,
+    };
+
+    try {
+      // Use form-urlencoded for better CORS compatibility (gets body through to Apps Script)
+      const formData = new URLSearchParams();
+      formData.append('payload', JSON.stringify(payload));
+
+      await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: formData,
+      });
+
+      // Save order context for chained workflow
+      const orderContext = {
+        courier_name: courierName,
+        order_id: orderId,
+        customer: customer,
+        venue: venue,
+        racket_models: racketModelsText,
+        rackets_detail: selectedRackets,
+        updated_at: Date.now(),
+      };
+      localStorage.setItem('rentme_active_order', JSON.stringify(orderContext));
+
+      showSuccess(courierName, orderId, customer, venue, racketModelsText, selectedRackets.length, pickupTime);
+    } catch (err) {
+      showError('Gagal kirim. ' + err.message);
+      btn.disabled = false;
+      btn.classList.remove('loading');
+      btn.textContent = 'Submit Step 1 ✓';
+    }
+  }
+
+  function showSuccess(courier, orderId, customer, venue, rackets, count, pickupTime) {
+    document.getElementById('form_body').style.display = 'none';
+    document.getElementById('nav').style.display = 'none';
+    document.getElementById('success').classList.add('active');
+
+    // Compact WhatsApp message
+    const timeStr = pickupTime ? `\nJam: ${pickupTime}` : '';
+    const waMessage = `*1. AMBIL GUDANG*
+Courier: ${courier}
+Order: ${orderId}
+Customer: ${customer}
+Venue: ${venue}
+Raket: ${rackets} (${count} item)${timeStr}`;
+
+    document.getElementById('wa_message').textContent = waMessage;
+    document.getElementById('next_step_btn').href = NEXT_FORM_URL;
+
+    // Store message for copy
+    window._waMessage = waMessage;
+  }
+
+  function copyMessage() {
+    const btn = document.getElementById('copy_btn');
+    const btnText = document.getElementById('copy_btn_text');
+    const text = window._waMessage || document.getElementById('wa_message').textContent;
+
+    // Try modern API first
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        btn.classList.add('copied');
+        btnText.textContent = 'Copied ✓';
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btnText.textContent = 'Copy Text';
+        }, 2000);
+      }).catch(() => fallbackCopy(text, btn, btnText));
+    } else {
+      fallbackCopy(text, btn, btnText);
+    }
+  }
+
+  function fallbackCopy(text, btn, btnText) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      btn.classList.add('copied');
+      btnText.textContent = 'Copied ✓';
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btnText.textContent = 'Copy Text';
+      }, 2000);
+    } catch (e) {
+      alert('Copy gagal. Tap dan hold text di atas buat copy manual.');
+    }
+    document.body.removeChild(textarea);
+  }
+</script>
+</body>
+</html>
