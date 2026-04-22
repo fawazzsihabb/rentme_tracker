@@ -243,7 +243,7 @@
 </div>
 
 <script>
-  const WEBHOOK_URL = 'REPLACE_WITH_YOUR_APPS_SCRIPT_URL';
+  const _URL = 'https://script.google.com/macros/s/AKfycbyFcI2kHsOR8C3S2LZusfGoMy0UXkZOQozDxj31chElL4d3mK89dxjm2QqQHnewXzw1pQ/exec';
   const NEXT_FORM_URL = 'form_jemput_venue.html';
 
   let activeOrder = null;
@@ -312,7 +312,7 @@
     try {
       const formData = new URLSearchParams();
       formData.append('payload', JSON.stringify(payload));
-      await fetch(WEBHOOK_URL, { method: 'POST', mode: 'no-cors', body: formData });
+      await fetch(_URL, { method: 'POST', mode: 'no-cors', body: formData });
 
       if (activeOrder) {
         activeOrder.updated_at = Date.now();
