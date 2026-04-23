@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panduan Operasional Courier · RentMe Padel</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,700;9..144,900&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --ink: #0a0a0a;
+    --paper: #f4ede3;
+    --paper-dark: #e8dfd1;
+    --accent: #c4341c;
+    --green: #2d5f3f;
+    --warn: #d4a017;
+    --muted: #6b5d4a;
+    --line: rgba(10, 10, 10, 0.15);
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .doc {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 30px 60px;
+  }
+
+  /* HEADER */
+  .header {
+    border-bottom: 3px solid var(--ink);
+    padding-bottom: 24px;
+    margin-bottom: 36px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+    align-items: end;
+  }
+  .header-left .doctype {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .header-left h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 48px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .header-left .subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 10px;
+  }
+  .header-right {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    line-height: 1.6;
+  }
+
+  /* OVERVIEW BOX */
+  .overview {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 28px 32px;
+    margin-bottom: 44px;
+  }
+  .overview-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .overview h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+  .overview p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: rgba(244, 237, 227, 0.85);
+  }
+
+  /* SECTION TITLE */
+  .section {
+    margin-bottom: 44px;
+  }
+  .section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .section-heading {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  /* 4 STEPS GRID */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .step {
+    background: #fff;
+    border: 2px solid var(--ink);
+    padding: 20px 18px;
+  }
+  .step[data-num="1"] { border-top: 8px solid var(--green); }
+  .step[data-num="2"] { border-top: 8px solid var(--accent); }
+  .step[data-num="3"] { border-top: 8px solid var(--warn); }
+  .step[data-num="4"] { border-top: 8px solid var(--green); }
+  .step-num {
+    font-family: 'Fraunces', serif;
+    font-size: 36px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+  .step-name {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+  .step-when {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+  .step-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    background: var(--paper-dark);
+    padding: 6px 8px;
+    letter-spacing: 0.05em;
+    line-height: 1.4;
+  }
+
+  .flow {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+    padding: 18px 0;
+    border-top: 1px dashed var(--line);
+    border-bottom: 1px dashed var(--line);
+  }
+  .flow-box {
+    background: var(--paper-dark);
+    padding: 8px 4px;
+    font-weight: 700;
+  }
+  .flow-arrow {
+    color: var(--accent);
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  /* PROCEDURE CARDS */
+  .procedure-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .proc-card {
+    background: #fff;
+    border: 2px solid var(--ink);
+    padding: 24px 26px;
+  }
+  .proc-card h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .proc-card h3 .num {
+    width: 28px; height: 28px;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .proc-card ol {
+    font-size: 13.5px;
+    padding-left: 20px;
+    line-height: 1.8;
+  }
+  .proc-card ol li {
+    padding-left: 6px;
+    margin-bottom: 4px;
+  }
+  .proc-card .note {
+    margin-top: 16px;
+    padding: 12px 14px;
+    background: var(--paper-dark);
+    border-left: 3px solid var(--accent);
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+  .proc-card .note strong {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  /* EXAMPLE MESSAGE */
+  .example-card {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0;
+    overflow: hidden;
+  }
+  .example-card-header {
+    padding: 14px 24px;
+    background: #25D366;
+    color: white;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .example-card-body {
+    padding: 22px 26px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    line-height: 1.9;
+    white-space: pre-wrap;
+  }
+
+  /* DAMAGE PROTOCOL */
+  .damage-box {
+    background: #fdecec;
+    border: 2px solid var(--accent);
+    padding: 24px 28px;
+  }
+  .damage-box-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .damage-box-header .icon {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    color: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 16px;
+  }
+  .damage-box h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .damage-box p {
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .damage-box p + p { margin-top: 10px; }
+  .damage-box strong {
+    font-weight: 700;
+  }
+
+  /* RULES */
+  .rules {
+    background: var(--paper-dark);
+    padding: 28px 32px;
+    border-left: 6px solid var(--ink);
+  }
+  .rules-heading {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .rules ul {
+    list-style: none;
+    padding: 0;
+  }
+  .rules ul li {
+    padding: 12px 0 12px 32px;
+    position: relative;
+    font-size: 13.5px;
+    line-height: 1.6;
+    border-bottom: 1px dashed var(--line);
+  }
+  .rules ul li:last-child { border-bottom: none; }
+  .rules ul li::before {
+    content: counter(rules-counter, decimal-leading-zero);
+    counter-increment: rules-counter;
+    position: absolute;
+    left: 0;
+    top: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  .rules ul {
+    counter-reset: rules-counter;
+  }
+  .rules ul li strong {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 14px;
+  }
+
+  /* FOOTER */
+  .footer {
+    border-top: 3px solid var(--ink);
+    padding-top: 20px;
+    margin-top: 44px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+    align-items: center;
+  }
+  .footer-brand {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+  .footer-note {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  @media print {
+    body { background: white; }
+    .doc { padding: 20px; max-width: 100%; }
+    .step, .proc-card, .damage-box { break-inside: avoid; }
+    .section { break-inside: avoid; }
+  }
+
+  @media (max-width: 680px) {
+    .doc { padding: 24px 16px; }
+    .header { grid-template-columns: 1fr; }
+    .header-right { text-align: left; }
+    .header-left h1 { font-size: 36px; }
+    .steps { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .flow { grid-template-columns: 1fr; gap: 6px; }
+    .flow-arrow { transform: rotate(90deg); }
+    .procedure-grid { grid-template-columns: 1fr; }
+    .overview { padding: 20px; }
+    .overview h2 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="doc">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="doctype">Panduan Operasional · Courier · v1.0</div>
+      <h1>Sistem Operasional<br>Pengiriman Raket</h1>
+      <div class="subtitle">Dokumen resmi untuk courier RentMe Padel.</div>
+    </div>
+    <div class="header-right">
+      RentMe Padel<br>
+      @rentme.padel<br>
+      Surabaya, 2026
+    </div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="overview">
+    <div class="overview-label">Ringkasan Tugas</div>
+    <h2>Alur kerja terdiri dari empat tahap untuk setiap pemesanan.</h2>
+    <p>Setiap courier bertanggung jawab mengantarkan raket dari gudang ke venue, kemudian menjemput kembali setelah sesi selesai, dan mengembalikan ke gudang. Setiap tahap wajib didokumentasikan melalui dua cara: pengisian formulir digital dan pengiriman foto ke grup WhatsApp. Sistem ini dirancang untuk menciptakan jejak dokumentasi yang jelas bagi semua pihak.</p>
+  </div>
+
+  <!-- THE 4 STEPS -->
+  <div class="section">
+    <div class="section-title">Bagian 1</div>
+    <h2 class="section-heading">Empat Tahap Pemesanan</h2>
+
+    <div class="steps">
+      <div class="step" data-num="1">
+        <div class="step-num">1</div>
+        <div class="step-name">Ambil di Gudang</div>
+        <div class="step-when">Saat mengambil raket dari CS gudang sebelum berangkat.</div>
+        <div class="step-status">Status: Out for Delivery</div>
+      </div>
+      <div class="step" data-num="2">
+        <div class="step-num">2</div>
+        <div class="step-name">Serah di Venue</div>
+        <div class="step-when">Saat menyerahkan raket kepada customer atau concierge di lokasi.</div>
+        <div class="step-status">Status: At Venue</div>
+      </div>
+      <div class="step" data-num="3">
+        <div class="step-num">3</div>
+        <div class="step-name">Jemput di Venue</div>
+        <div class="step-when">Saat menjemput raket kembali setelah sesi customer selesai.</div>
+        <div class="step-status">Status: In Return</div>
+      </div>
+      <div class="step" data-num="4">
+        <div class="step-num">4</div>
+        <div class="step-name">Balik ke Gudang</div>
+        <div class="step-when">Saat menyerahkan raket kembali kepada CS di gudang.</div>
+        <div class="step-status">Status: At Warehouse</div>
+      </div>
+    </div>
+
+    <div class="flow">
+      <div class="flow-box">Gudang</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">Venue</div>
+      <div class="flow-arrow">⏳</div>
+      <div class="flow-box">Venue</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">Gudang</div>
+    </div>
+  </div>
+
+  <!-- PROCEDURE -->
+  <div class="section">
+    <div class="section-title">Bagian 2</div>
+    <h2 class="section-heading">Prosedur Pelaksanaan</h2>
+
+    <div class="procedure-grid">
+
+      <div class="proc-card">
+        <h3><span class="num">A</span>Pengisian Formulir</h3>
+        <ol>
+          <li>Buka formulir digital sesuai tahap saat ini.</li>
+          <li>Isi data yang diminta. Sebagian besar menggunakan dropdown; pengetikan minimal.</li>
+          <li>Tekan tombol Submit di bawah formulir.</li>
+          <li>Layar akan menampilkan tombol "Copy Text" berwarna hijau.</li>
+          <li>Tekan tombol tersebut untuk menyalin pesan otomatis.</li>
+          <li>Tekan tombol "Step Berikutnya" saat siap lanjut ke tahap berikutnya.</li>
+        </ol>
+        <div class="note">
+          <strong>Catatan</strong>
+          Pada Tahap 2, 3, dan 4, data order sudah terisi otomatis dari Tahap 1. Tidak perlu mengetik ulang.
+        </div>
+      </div>
+
+      <div class="proc-card">
+        <h3><span class="num">B</span>Dokumentasi Foto</h3>
+        <ol>
+          <li>Install aplikasi <strong>Timemark</strong> melalui Play Store atau App Store.</li>
+          <li>Foto raket menggunakan Timemark (bukan kamera bawaan).</li>
+          <li>Timemark akan menambahkan tanggal, jam, lokasi, dan koordinat GPS secara otomatis.</li>
+          <li>Kirim foto Timemark ke grup WhatsApp bersama pesan yang sudah disalin dari formulir.</li>
+        </ol>
+        <div class="note">
+          <strong>Fungsi Dokumentasi</strong>
+          Foto Timemark adalah bukti resmi operasional. Jika terjadi perbedaan informasi atau klaim dari customer, dokumentasi ini yang menjadi referensi utama. Dokumentasi melindungi semua pihak.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- EXAMPLE MESSAGE -->
+  <div class="section">
+    <div class="section-title">Bagian 3</div>
+    <h2 class="section-heading">Contoh Pesan WhatsApp</h2>
+
+    <div class="example-card">
+      <div class="example-card-header">Contoh untuk Tahap 1 · Ambil di Gudang</div>
+      <div class="example-card-body">*1. AMBIL GUDANG*
+Courier: Noer
+Order: RM-260422-1234
+Customer: Budi S.
+Venue: Hyde Padel
+Raket: Adidas Match Green & Royal M27 Light (2 item)
+Jam: 07:58</div>
+    </div>
+  </div>
+
+  <!-- DAMAGE PROTOCOL -->
+  <div class="section">
+    <div class="section-title">Bagian 4</div>
+    <h2 class="section-heading">Prosedur Kerusakan atau Kehilangan</h2>
+
+    <div class="damage-box">
+      <div class="damage-box-header">
+        <div class="icon">!</div>
+        <h3>Jika Raket Mengalami Kerusakan atau Hilang</h3>
+      </div>
+      <p>
+        Pada <strong>Tahap 3 (Jemput di Venue)</strong>, formulir menyediakan empat pilihan kondisi raket: <strong>Utuh, Baret, Rusak,</strong> atau <strong>Hilang</strong>. Pilih sesuai kondisi aktual yang ditemukan di lapangan.
+      </p>
+      <p>
+        Apabila ditemukan kerusakan baru atau kehilangan, isi detail pada kolom deskripsi yang muncul secara otomatis. Formulir akan menandai order sebagai "PERLU REVIEW" dan dispatcher akan melakukan tindak lanjut dengan customer secara langsung.
+      </p>
+      <p>
+        Pelaporan yang jujur dan akurat adalah bagian dari tanggung jawab courier. Dokumentasi yang lengkap pada setiap tahap memastikan tanggung jawab atas kerusakan dapat ditelusuri dengan adil dan transparan.
+      </p>
+    </div>
+  </div>
+
+  <!-- RULES -->
+  <div class="section">
+    <div class="section-title">Bagian 5</div>
+    <h2 class="section-heading">Ketentuan Operasional</h2>
+
+    <div class="rules">
+      <h3 class="rules-heading">Aturan Penggunaan Sistem</h3>
+      <ul>
+        <li>
+          <strong>Tahap 1 bersifat wajib.</strong>
+          Data pada Tahap 2, 3, dan 4 bergantung pada informasi yang diisi di Tahap 1. Jika Tahap 1 tidak diisi, tahap selanjutnya tidak dapat terintegrasi secara otomatis.
+        </li>
+        <li>
+          <strong>Tidak diperbolehkan melewati tahap.</strong>
+          Setiap tahap wajib diisi pada waktu yang sesuai, meskipun hanya sebentar. Pengisian terlambat dapat mempengaruhi catatan status raket.
+        </li>
+        <li>
+          <strong>Foto Timemark wajib di setiap tahap.</strong>
+          Dokumentasi foto adalah bagian dari prosedur standar. Tanpa foto, pertanggungjawaban akan sulit ditelusuri jika terjadi perbedaan informasi.
+        </li>
+        <li>
+          <strong>Order ID harus sesuai.</strong>
+          Salin Order ID dari pesan dispatcher di grup WhatsApp dan masukkan pada Tahap 1. Tahap 2 hingga 4 akan mengisi Order ID secara otomatis.
+        </li>
+        <li>
+          <strong>Prosedur alternatif jika HP bermasalah.</strong>
+          Apabila HP mati, tertinggal, atau mengalami gangguan, laporkan langsung ke dispatcher melalui WhatsApp dengan format: Nama Courier, Order ID, dan tahap saat ini. Dispatcher akan mengisi formulir secara manual.
+        </li>
+        <li>
+          <strong>Penyelesaian order.</strong>
+          Setelah Tahap 4 selesai disubmit, order dianggap complete. Tombol "Mulai Order Baru" dapat ditekan untuk memulai siklus berikutnya.
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-brand">RentMe Padel.</div>
+    <div class="footer-note">Pertanyaan dapat diajukan langsung kepada operator.</div>
+  </div>
+
+</div>
+
+</body>
+</html>
