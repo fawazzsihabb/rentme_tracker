@@ -67,7 +67,6 @@
   }
   .context-row .lbl { color: var(--muted); }
   .context-row .val { font-weight: 600; text-align: right; }
-  .context-row .val.damage-flag { color: var(--accent); font-weight: 700; }
 
   .wa-instruction {
     background: #25D366; color: white; padding: 14px; margin-bottom: 16px;
@@ -170,9 +169,6 @@
       <div class="context-row"><span class="lbl">Customer</span><span class="val" id="ctx_customer">—</span></div>
       <div class="context-row"><span class="lbl">Venue</span><span class="val" id="ctx_venue">—</span></div>
       <div class="context-row"><span class="lbl">Raket</span><span class="val" id="ctx_rackets">—</span></div>
-      <div class="context-row" id="ctx_condition_row" style="display:none">
-        <span class="lbl">Kondisi Saat Jemput</span><span class="val" id="ctx_condition">—</span>
-      </div>
     </div>
 
     <div class="wa-instruction">
@@ -230,61 +226,73 @@
 </div>
 
 <script>
-  const WEBHOOK_URL = '1H5HtfQwVp8TQAQImpTkT_7Zi2xUH5rYhNZLcTErDJWQ';
+  // =========================================================
+  // CONFIG — REPLACE WITH YOUR REAL APPS SCRIPT URL
+  // Make sure URL starts with: https://script.google.com/macros/s/
+  // =========================================================
+  const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyFcI2kHsOR8C3S2LZusfGoMy0UXkZOQozDxj31chElL4d3mK89dxjm2QqQHnewXzw1pQ/exec';
 
-  let activeOrder = null;
+  // Store these on window to avoid scope issues
+  window.activeOrder = null;
+  window._waMessage = '';
 
   function loadActiveOrder() {
-    const savedName = localStorage.getItem('rentme_courier_name');
-    if (savedName) document.getElementById('courier_name').value = savedName;
-
     try {
-      const raw = localStorage.getItem('rentme_active_order');
-      if (!raw) return;
-      const order = JSON.parse(raw);
-      const age = Date.now() - (order.updated_at || 0);
-      if (age > 24 * 3600 * 1000) return;
-      activeOrder = order;
+      var savedName = localStorage.getItem('rentme_courier_name');
+      if (savedName) {
+        var nameInput = document.getElementById('courier_name');
+        if (nameInput) nameInput.value = savedName;
+      }
 
-      document.getElementById('order_id').value = order.order_id;
+      var raw = localStorage.getItem('rentme_active_order');
+      if (!raw) return;
+
+      var order = JSON.parse(raw);
+      var age = Date.now() - (order.updated_at || 0);
+      if (age > 24 * 3600 * 1000) return;
+
+      window.activeOrder = order;
+
+      document.getElementById('order_id').value = order.order_id || '';
       document.getElementById('order_id').classList.add('prefilled');
 
       document.getElementById('context_card').style.display = 'block';
-      document.getElementById('ctx_order').textContent = order.order_id;
-      document.getElementById('ctx_customer').textContent = order.customer;
-      document.getElementById('ctx_venue').textContent = order.venue;
-      document.getElementById('ctx_rackets').textContent = order.racket_models;
-
-      if (order.pickup_condition) {
-        const condMap = {good: 'Utuh ✓', minor: 'Baret Ringan', major: 'Rusak Berat ⚠', lost: 'Hilang ✗'};
-        document.getElementById('ctx_condition_row').style.display = 'flex';
-        const condEl = document.getElementById('ctx_condition');
-        condEl.textContent = condMap[order.pickup_condition] || order.pickup_condition;
-        if (order.pickup_condition === 'major' || order.pickup_condition === 'lost') {
-          condEl.classList.add('damage-flag');
-        }
-      }
-    } catch (err) { console.error(err); }
+      document.getElementById('ctx_order').textContent = order.order_id || '—';
+      document.getElementById('ctx_customer').textContent = order.customer || '—';
+      document.getElementById('ctx_venue').textContent = order.venue || '—';
+      document.getElementById('ctx_rackets').textContent = order.racket_models || '—';
+    } catch (err) {
+      console.error('loadActiveOrder error:', err);
+    }
   }
 
   function showError(msg) {
-    const err = document.getElementById('error_msg');
+    var err = document.getElementById('error_msg');
     err.textContent = msg;
     err.classList.add('active');
     window.scrollTo(0, 0);
   }
 
   async function submitForm() {
-    document.getElementById('error_msg').classList.remove('active');
-    const btn = document.getElementById('submit_btn');
+    console.log('submitForm called');
 
-    const courierName = document.getElementById('courier_name').value.trim();
-    const orderId = document.getElementById('order_id').value.trim();
-    const receivedBy = document.getElementById('received_by_warehouse').value.trim();
-    const returnTime = document.getElementById('return_time').value;
+    var errEl = document.getElementById('error_msg');
+    errEl.classList.remove('active');
 
-    if (!courierName || !orderId) { showError('Harap isi Nama dan Order ID.'); return; }
-    if (!receivedBy) { showError('Harap isi Nama CS Gudang.'); return; }
+    var btn = document.getElementById('submit_btn');
+    var courierName = document.getElementById('courier_name').value.trim();
+    var orderId = document.getElementById('order_id').value.trim();
+    var receivedBy = document.getElementById('received_by_warehouse').value.trim();
+    var returnTime = document.getElementById('return_time').value;
+
+    if (!courierName || !orderId) {
+      showError('Harap isi Nama dan Order ID.');
+      return;
+    }
+    if (!receivedBy) {
+      showError('Harap isi Nama CS Gudang.');
+      return;
+    }
 
     localStorage.setItem('rentme_courier_name', courierName);
 
@@ -292,88 +300,112 @@
     btn.classList.add('loading');
     btn.textContent = 'Mengirim...';
 
-    const payload = {
+    // Build payload with safe fallbacks
+    var ao = window.activeOrder || {};
+    var payload = {
       form_type: 'balik_gudang',
       timestamp: new Date().toISOString(),
       courier_name: courierName,
       order_id: orderId,
-      customer: activeOrder ? activeOrder.customer : '',
-      venue: activeOrder ? activeOrder.venue : '',
-      racket_models: activeOrder ? activeOrder.racket_models : '',
-      rackets_detail: activeOrder ? activeOrder.rackets_detail : [],
-      condition_final: activeOrder ? activeOrder.pickup_condition : 'good',
+      customer: ao.customer || '',
+      venue: ao.venue || '',
+      racket_models: ao.racket_models || '',
+      rackets_detail: ao.rackets_detail || [],
+      condition_final: ao.pickup_condition || 'good',
       received_by_warehouse: receivedBy,
       return_time: returnTime,
     };
 
+    console.log('Submitting payload:', payload);
+    console.log('Fetching:', WEBHOOK_URL);
+
     try {
-      const formData = new URLSearchParams();
+      var formData = new URLSearchParams();
       formData.append('payload', JSON.stringify(payload));
-      await fetch(WEBHOOK_URL, { method: 'POST', mode: 'no-cors', body: formData });
 
-      // Clear active order — cycle complete
-      localStorage.removeItem('rentme_active_order');
+      await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: formData,
+      });
 
-      showSuccess(courierName, orderId, receivedBy, returnTime);
+      console.log('Fetch completed');
+
+      // Clear active order — cycle done
+      try { localStorage.removeItem('rentme_active_order'); } catch (e) {}
+
+      showSuccess(courierName, orderId, receivedBy, returnTime, payload);
     } catch (err) {
-      showError('Gagal kirim. ' + err.message);
+      console.error('Submit error:', err);
+      showError('Gagal kirim: ' + err.message);
       btn.disabled = false;
       btn.classList.remove('loading');
       btn.textContent = 'Submit Final ✓';
     }
   }
 
-  function showSuccess(courier, orderId, receivedBy, returnTime) {
+  function showSuccess(courier, orderId, receivedBy, returnTime, payload) {
     document.getElementById('form_body').style.display = 'none';
     document.getElementById('nav').style.display = 'none';
     document.getElementById('success').classList.add('active');
 
-    const customer = activeOrder ? activeOrder.customer : '';
-    const venue = activeOrder ? activeOrder.venue : '';
-    const condition = activeOrder ? activeOrder.pickup_condition : 'good';
-    const condMap = {good: 'Utuh ✓', minor: 'Baret Ringan', major: 'Rusak Berat ⚠', lost: 'Hilang ✗'};
-    const condLabel = condMap[condition] || 'Utuh ✓';
+    var customer = payload.customer || '';
+    var venue = payload.venue || '';
+    var condition = payload.condition_final || 'good';
+    var condMap = { good: 'Utuh ✓', minor: 'Baret Ringan', major: 'Rusak Berat ⚠', lost: 'Hilang ✗' };
+    var condLabel = condMap[condition] || 'Utuh ✓';
 
-    const timeStr = returnTime ? `\nJam: ${returnTime}` : '';
-    const waMessage = `*4. BALIK GUDANG*
-Courier: ${courier}
-Order: ${orderId}
-Customer: ${customer}
-Venue: ${venue}
-Kondisi akhir: ${condLabel}
-Diterima: ${receivedBy}${timeStr}
-
-✓ ORDER COMPLETE`;
+    var timeStr = returnTime ? '\nJam: ' + returnTime : '';
+    var waMessage = '*4. BALIK GUDANG*\n' +
+                    'Courier: ' + courier + '\n' +
+                    'Order: ' + orderId + '\n' +
+                    'Customer: ' + customer + '\n' +
+                    'Venue: ' + venue + '\n' +
+                    'Kondisi akhir: ' + condLabel + '\n' +
+                    'Diterima: ' + receivedBy + timeStr + '\n\n' +
+                    '✓ ORDER COMPLETE';
 
     document.getElementById('wa_message').textContent = waMessage;
     window._waMessage = waMessage;
   }
 
   function copyMessage() {
-    const btn = document.getElementById('copy_btn');
-    const btnText = document.getElementById('copy_btn_text');
-    const text = window._waMessage || document.getElementById('wa_message').textContent;
+    var btn = document.getElementById('copy_btn');
+    var btnText = document.getElementById('copy_btn_text');
+    var text = window._waMessage || document.getElementById('wa_message').textContent;
 
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(() => {
+      navigator.clipboard.writeText(text).then(function() {
         btn.classList.add('copied');
         btnText.textContent = 'Copied ✓';
-        setTimeout(() => { btn.classList.remove('copied'); btnText.textContent = 'Copy Text'; }, 2000);
-      }).catch(() => fallbackCopy(text, btn, btnText));
+        setTimeout(function() {
+          btn.classList.remove('copied');
+          btnText.textContent = 'Copy Text';
+        }, 2000);
+      }).catch(function() { fallbackCopy(text, btn, btnText); });
     } else {
       fallbackCopy(text, btn, btnText);
     }
   }
 
   function fallbackCopy(text, btn, btnText) {
-    const ta = document.createElement('textarea');
-    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.select();
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
     try {
       document.execCommand('copy');
-      btn.classList.add('copied'); btnText.textContent = 'Copied ✓';
-      setTimeout(() => { btn.classList.remove('copied'); btnText.textContent = 'Copy Text'; }, 2000);
-    } catch(e) { alert('Copy gagal. Tap dan hold text buat copy manual.'); }
+      btn.classList.add('copied');
+      btnText.textContent = 'Copied ✓';
+      setTimeout(function() {
+        btn.classList.remove('copied');
+        btnText.textContent = 'Copy Text';
+      }, 2000);
+    } catch (e) {
+      alert('Copy gagal. Tap dan hold text buat copy manual.');
+    }
     document.body.removeChild(ta);
   }
 
